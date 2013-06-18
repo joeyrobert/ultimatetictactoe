@@ -17,55 +17,113 @@ class UltimateTicTacToe
     @turn = 'x'
     @movecount = 0
     @activeGame = undefined # 0 - 8 or undefined is all
-    @gameComplete = false
+    @gamePaused = true
+    @mode = undefined
 
   bindEvents: =>
     $(window).resize(@resize)
     $('.square').click(@clickSquare)
     $('#playagain').click(@playAgain)
+    $('#zeroplayer').click(@zeroPlayer)
+    $('#oneplayer').click(@onePlayer)
+    $('#twoplayer').click(@twoPlayer)
 
   unbindEvents: =>
     $(window).off('resize', @resize)
     $('.square').off('click', @clickSquare)
     $('#playagain').off('click', @playAgain)
+    $('#zeroplayer').off('click', @zeroPlayer)
+    $('#oneplayer').off('click', @onePlayer)
+    $('#twoplayer').off('click', @twoPlayer)
+
+  zeroPlayer: =>
+    @mode = 0
+    @hideModal('intro')
+    @gamePaused = false
+    @playRandomGame()
+    false
+
+  onePlayer: =>
+    @mode = 1
+    @hideModal('intro')
+    @gamePaused = false
+    false
+
+  twoPlayer: =>
+    @mode = 2
+    @hideModal('intro')
+    @gamePaused = false
+    false
+
+  hideModal: (cls) =>
+    $(".mymodal.#{cls}").css
+      opacity: 0
+    setTimeout =>
+      $(".mymodal.#{cls}").hide()
+    , 250
+
+  showModal: (cls) =>
+    $(".mymodal.#{cls}").css
+      opacity: 0
+      display: 'block'
+
+    $(".mymodal.#{cls}").css
+      opacity: 1
 
   draw: =>
     html = """
-      <% for(var i = 0; i < 9; i++) { %>
-        <div class="game <%-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'][i] %>">
-          <% for(var j = 0; j < 9; j++) { %>
-            <div data-i="<%-i %>" data-j="<%-j %>" class="square <%-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'][j] %><% if(board[i][j]) { %> <%-board[i][j] %><% } %>"></div>
-          <% } %>
-          <div class="winner"></div>
+      <div id="tictactoe" class="x">
+        <% for(var i = 0; i < 9; i++) { %>
+          <div class="game <%-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'][i] %>">
+            <% for(var j = 0; j < 9; j++) { %>
+              <div data-i="<%-i %>" data-j="<%-j %>" class="square <%-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'][j] %><% if(board[i][j]) { %> <%-board[i][j] %><% } %>"></div>
+            <% } %>
+            <div class="winner"></div>
+          </div>
+        <% } %>
+        <div class="overallwinner mymodal">
+          <span class="turn"></span>
+          <a href="#" id="playagain">Play again?</a>
         </div>
-      <% } %>
-      <div class="overallwinner">
-        <span class="turn"></span>
-        <a href="#" id="playagain">Play again?</a>
+        <div class="intro mymodal">
+          <h3>New Game</h3>
+          <a href="#" id="zeroplayer" class="btn">0 players</a>
+          <a href="#" id="oneplayer" class="btn">1 player</a>
+          <a href="#" id="twoplayer" class="btn">2 players</a>
+        </div>
       </div>
     """
 
     template = _.template(html)
-    $('#tictactoe').html(template({board: @board}))
+    @$container = $('#tictactoecontainer')
+    @$container.html(template({board: @board}))
 
   resize: =>
     windowWidth = $(window).width()
     windowHeight = $(window).height()
-    @scale = Math.min(windowWidth / 444, windowHeight / 444)
+    containerWidth = @$container.width()
+    containerHeight = @$container.height()
+    @scale = Math.min(containerWidth / 450, containerHeight / 450)
     $('#tictactoe').css
       transform: "scale(#{@scale})"
 
   changeTurn: =>
+    $('#tictactoe').removeClass(@turn)
     if @turn is 'x'
       @turn = 'o'
     else
       @turn = 'x'
+    $('#tictactoe').addClass(@turn)
 
   clickSquare: (e) =>
     $square = $(e.currentTarget)
     i = $square.data('i')
     j = $square.data('j')
-    if !@gameComplete and _.isUndefined(@board[i][j]) and (i is @activeGame or _.isUndefined(@activeGame))
+    @tictactoe(i, j)
+
+  tictactoe: (i, j) =>
+    if @mode? and !@gamePaused and _.isUndefined(@board[i][j]) and (i is @activeGame or _.isUndefined(@activeGame))
+      $square = $(".square[data-i=#{i}][data-j=#{j}]")
       # Add move
       @board[i][j] = @turn
       $square.addClass(@turn)
@@ -79,13 +137,16 @@ class UltimateTicTacToe
       # Determine winners and update active
       @showWinners(@turn, i)
 
-      unless @gameComplete
+      unless @gamePaused
         @activeGame = j
         if @gameFull(@board[j])
           @activeGame = undefined
         @showActiveGame()
 
         @changeTurn()
+
+      if @mode is 1 and @turn is 'o'
+        @playRandomSquare()
 
   letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I']
 
@@ -122,14 +183,15 @@ class UltimateTicTacToe
     if @movecount >= 9*9 and overallWinners.length is 0
       # Tie
       $(".game").removeClass('active')
-      @gameComplete = true
+      @gamePaused = true
       @showWinnerModal()
-
+      clearInterval(@gameInterval) if @gameInterval?
     else if overallWinners.length > 0
       # x or o wins
       $(".game").removeClass('active')
-      @gameComplete = true
+      @gamePaused = true
       @showWinnerModal(turn)
+      clearInterval(@gameInterval) if @gameInterval?
 
   showWinnerModal: (turn) =>
     if turn is 'x'
@@ -177,15 +239,20 @@ class UltimateTicTacToe
     @newGameState()
     @draw()
     @showActiveGame()
+    @resize()
     @bindEvents()
     false
 
-  playRandom: =>
-    setInterval =>
-      $squares = $('.game.active .square:not(.x):not(.o)')
-      randInt = Math.floor(Math.random()*$squares.length)
-      $squares.eq(randInt).click()
-    , 10
+  playRandomGame: (forever=false) =>
+    @gameInterval = setInterval =>
+      @playRandomSquare()
+      $('#playagain:visible').click() if forever
+    , 100
+
+  playRandomSquare: =>
+    $squares = $('.game.active .square:not(.x):not(.o)')
+    randInt = Math.floor(Math.random()*$squares.length)
+    $squares.eq(randInt).click()
 
 #
 # Touch event handler
@@ -210,5 +277,3 @@ $(document).ready ->
   tictactoe.showActiveGame()
   tictactoe.resize()
   tictactoe.bindEvents()
-
-  tictactoe.playRandom()
