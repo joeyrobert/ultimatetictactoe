@@ -15,6 +15,7 @@ class UltimateTicTacToe
         @board[i][j] = undefined
 
     @turn = 'x'
+    @movecount = 0
     @activeGame = undefined # 0 - 8 or undefined is all
     @gameComplete = false
 
@@ -65,6 +66,7 @@ class UltimateTicTacToe
     i = $square.data('i')
     j = $square.data('j')
     if !@gameComplete and _.isUndefined(@board[i][j]) and (i is @activeGame or _.isUndefined(@activeGame))
+      # Add move
       @board[i][j] = @turn
       $square.addClass(@turn)
       if @turn is 'x'
@@ -72,6 +74,9 @@ class UltimateTicTacToe
       else
         $square.html('&#9675;')
 
+      @movecount += 1
+
+      # Determine winners and update active
       @showWinners(@turn, i)
 
       unless @gameComplete
@@ -114,7 +119,7 @@ class UltimateTicTacToe
 
     # Game over state
     overallWinners = @findWinners(@gameWinners, turn)
-    if @gameFull(@gameWinners) and overallWinners.length is 0
+    if @movecount >= 9*9 and overallWinners.length is 0
       # Tie
       $(".game").removeClass('active')
       @gameComplete = true
@@ -180,7 +185,7 @@ class UltimateTicTacToe
       $squares = $('.game.active .square:not(.x):not(.o)')
       randInt = Math.floor(Math.random()*$squares.length)
       $squares.eq(randInt).click()
-    , 100
+    , 10
 
 #
 # Touch event handler
