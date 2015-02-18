@@ -1,0 +1,15 @@
+{
+  "name": "ultimatetictactoe",
+  "version": "0.0.2",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/joeyrobert/ultimatetictactoe.git"
+  },
+  "author": "Joey Robert",
+  "dependencies": {
+    "coffee-script": "^1.9.0",
+    "uglify-js": "^2.4.16"
+  },
+  "devDependencies": {}
+}

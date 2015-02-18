@@ -5,6 +5,7 @@
     board = [];
     gameWinners = [];
     for (i = 0; i < 9; i++) {
+      board[i] = [];
       gameWinners[i] = void 0;
       for (j = 0; j < 9; j++) {
         board[i][j] = void 0;
@@ -18,7 +19,7 @@
   }
 
   function bindEvents() {
-    $(window).resize(resize);
+    window.onresize = resize;
     $('.square').click(clickSquare);
     $('#playagain').click(start);
     $('#zeroplayer').click(zeroPlayer);
@@ -56,15 +57,30 @@
 
   function renderHTML(map) {
     var elements = ['div', 'span', 'h3', 'a'], i, j, x, y = [], output = '';
+    if(typeof map == 'string') {
+      return map;
+    }
 
+    // For loop
+    if(map[0]['f']) {
+      for(i = 0; i < map[0]['f']; i++) {
+        for(j = 1; j < map.length; j++) {
+          y.push(renderHTML(map[j]));
+        }
+      }
+      return y.join('');
+    }
+
+    // elements
     for(i in elements) {
       x = elements[i];
-      if(map[0] == [x[0]]) {
-        y[0] = ['<' + x[0] + ' class="' + map[x[0]]+ '">'],
+      if(map[0][x[0]]) {
+        y[0] = '<' + x + ' class="' + map[0][x[0]]+ '">';
         for(j = 1; j < map.length; j++) {
-          y.push(renderHTML(map[x])),
+          y.push(renderHTML(map[j]));
         }
-        y['</' + x[0] + '>'];
+        y.push('</' + x + '>');
+        output = y.join('');
       }
     };
     return output;
@@ -72,10 +88,10 @@
 
   function draw() {
     b.innerHTML = renderHTML(
-      [{div:'tictactoe'},
-        [{for: i, l: 9},
+      [{d:'tictactoe'},
+        [{f: 9},
           [{d: 'game'},
-            [{for: j, l: 9},
+            [{f: 9},
               [{d: 'square'}],
             ],
             [{d: 'winner'}]
@@ -88,7 +104,7 @@
           ]
         ],
         [{d: 'intro'},
-          [{h: 'turn'}
+          [{h: 'turn'},
             'New Game'
           ],
           [{a: 'player0'},
@@ -106,15 +122,7 @@
   }
 
   function resize() {
-    var containerHeight, containerWidth, windowHeight, windowWidth;
-    windowWidth = $(window).width();
-    windowHeight = $(window).height();
-    containerWidth = $container.width();
-    containerHeight = $container.height();
-    scale = Math.min(containerWidth / 450, containerHeight / 450);
-    $('#tictactoe').css({
-      transform: "scale(" + scale + ")"
-    });
+    $('#tictactoe').style = "transform: scale(" + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ")";
   }
 
   function changeTurn() {
@@ -191,7 +199,7 @@
         $(".game." + letters[i] + " .square." + letters[j]).addClass('won');
       }
     }
-    if (winners.length > 0 && _.isUndefined(gameWinners[i])) {
+    if (winners.length > 0 && !gameWinners[i]) {
       gameWinners[i] = turn;
       $game = $(".game." + letters[i]);
       $game.addClass("won").addClass(turn);
