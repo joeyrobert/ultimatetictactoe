@@ -2,9 +2,19 @@
 var fs = require('fs'),
 	UglifyJS = require('uglify-js');
 
+// Custom replace
+function keywordReplace(code) {
+	var keywords = ['overallwinner', 'tictactoe', 'game', 'square', 'winner', '(^re)turn', 'playagain', 'intro', 'player0', 'player1', 'player2', 'active'];
+	var mapping = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'];
+	for(var i = 0; i < keywords.length; i++) {
+		code = code.replace(new RegExp(keywords[i], 'g'), mapping[i]);
+	}
+	console.log(code);
+	return code;
+}
+
 // Minify
 function minify(code) {
-	console.log(code);
 	var toplevel = UglifyJS.parse(code);
 	toplevel.figure_out_scope();
 	var compressor = UglifyJS.Compressor({
@@ -36,11 +46,17 @@ function minify(code) {
 }
 
 var code = fs.readFileSync('tictactoe.golf.js', 'ascii');
-var minifiedCode = minify(code);
+var keywordReplacedCode = keywordReplace(code);
+var minifiedCode = minify(keywordReplacedCode);
 
+// Print code
+console.log(code);
+console.log(keywordReplacedCode);
+console.log(minifiedCode);
 
 // Report on stats
 console.log('Code size: ' + code.length);
+console.log('Keyword replaced code size: ' + keywordReplacedCode.length);
 console.log('Minified code size: ' + minifiedCode.length);
 
 // Insert into golf.html from shim.html
