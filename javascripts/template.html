@@ -1,0 +1,20 @@
+<div id="tictactoe" class="x">
+  <% for(var i = 0; i < 9; i++) { %>
+    <div class="game <%-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'][i] %>">
+      <% for(var j = 0; j < 9; j++) { %>
+        <div data-i="<%-i %>" data-j="<%-j %>" class="square <%-['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I'][j] %><% if(board[i][j]) { %> <%-board[i][j] %><% } %>"></div>
+      <% } %>
+      <div class="winner"></div>
+    </div>
+  <% } %>
+  <div class="overallwinner mymodal">
+    <span class="turn"></span>
+    <a href="#" id="playagain">Play again?</a>
+  </div>
+  <div class="intro mymodal">
+    <h3>New Game</h3>
+    <a href="#" id="zeroplayer" class="btn">0 players</a>
+    <a href="#" id="oneplayer" class="btn">1 player</a>
+    <a href="#" id="twoplayer" class="btn">2 players</a>
+  </div>
+</div>

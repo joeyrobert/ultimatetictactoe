@@ -1,0 +1,44 @@
+// Lisp link syntax for HTML using arrays
+// Support for optional repeat argument + if argument
+[{div:'tictactoe'},
+  [{for: i},
+    [{div: 'game'},
+      [{for: j},
+        [{div: 'square'}],
+      ],
+      [{div: 'winner'}]
+    ]
+  ],
+  [{div: 'overallwinner'},
+    [{span: 'turn'}],
+    [{a: 'playagain'},
+      'Play again?'
+    ]
+  ],
+  [{div: 'intro'},
+    [{h3: 'turn'}
+      'New Game'
+    ],
+    [{a: 'player0'},
+      '0 players'
+    ],
+    [{a: 'player1'},
+      '1 player'
+    ],
+    [{a: 'player2'},
+      '2 players'
+    ]
+  ]
+]
+
+
+
+
+
+
+
+  div class="intro mymodal"
+    h3 New Game
+    a href="#" id="zeroplayer" class="btn"0 players
+    a href="#" id="oneplayer" class="btn"1 player
+    a href="#" id="twoplayer" class="btn"2 players
