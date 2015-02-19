@@ -4,7 +4,7 @@ var fs = require('fs'),
 
 // Custom replace
 function keywordReplace(code) {
-	var keywords = ['overallwinner', 'tictactoe', 'game', 'square', 'winner', '(^re)turn', 'playagain', 'intro', 'player0', 'player1', 'player2', 'active'];
+	var keywords = ['overallwinner', 'tictactoe', 'game', 'square', 'winner', 'side', 'playagain', 'intro', 'player0', 'player1', 'player2', 'active'];
 	var mapping = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'];
 	for(var i = 0; i < keywords.length; i++) {
 		code = code.replace(new RegExp(keywords[i], 'g'), mapping[i]);

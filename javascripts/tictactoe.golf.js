@@ -1,57 +1,57 @@
 (function () {
-  var board, gameWinners, turn, movecount, activeGame, gamePaused, mode, gameInterval;
+  var board, gameWinners, side, movecount, activeGame, gamePaused, mode, gameInterval, u = void 0, boardElement, squares;
 
   function newGameState() {
     board = [];
     gameWinners = [];
     for (i = 0; i < 9; i++) {
       board[i] = [];
-      gameWinners[i] = void 0;
+      gameWinners[i] = u;
       for (j = 0; j < 9; j++) {
-        board[i][j] = void 0;
+        board[i][j] = u;
       }
     }
-    turn = 'x';
+    side = true; // true == x, false == o
     movecount = 0;
-    activeGame = void 0;
+    activeGame = u;
     gamePaused = true;
-    mode = void 0;
+    mode = u;
   }
 
   function bindEvents() {
     window.onresize = resize;
     $('.square').click(clickSquare);
-    $('#playagain').click(start);
-    $('#zeroplayer').click(zeroPlayer);
-    $('#oneplayer').click(onePlayer);
-    $('#twoplayer').click(twoPlayer);
+    $('.playagain').click(start);
+    $('.player0').click(player0);
+    $('.player1').click(player1);
+    $('.player2').click(player2);
   }
 
-  function zeroPlayer() {
+  function player0() {
     mode = 0;
     hideModal();
     gamePaused = false;
     playRandomGame();
   }
 
-  function onePlayer() {
+  function player1() {
     mode = 1;
     hideModal();
     gamePaused = false;
   }
 
-  function twoPlayer() {
+  function player2() {
     mode = 2;
     hideModal();
     gamePaused = false;
   }
 
   function hideModal() {
-    $(".mymodal.intro").css({
+    $('.intro').css({
       opacity: 0
     });
     return setTimeout(function() {
-      $(".mymodal.intro").hide();
+      $('.intro').hide();
     }, 250);
   }
 
@@ -71,6 +71,8 @@
       return y.join('');
     }
 
+    var d = {d: 'div', s: 'span', h3: 'h3', a: 'a'}
+
     // elements
     for(i in elements) {
       x = elements[i];
@@ -88,7 +90,7 @@
 
   function draw() {
     b.innerHTML = renderHTML(
-      [{d:'tictactoe'},
+      [ {d:'tictactoe'},
         [{f: 9},
           [{d: 'game'},
             [{f: 9},
@@ -98,13 +100,13 @@
           ]
         ],
         [{d: 'overallwinner'},
-          [{s: 'turn'}],
+          [{s: 'side'}],
           [{a: 'playagain'},
             'Play again?'
           ]
         ],
         [{d: 'intro'},
-          [{h: 'turn'},
+          [{h: 'side'},
             'New Game'
           ],
           [{a: 'player0'},
@@ -121,50 +123,48 @@
     );
   }
 
-  function resize() {
-    $('#tictactoe').style = "transform: scale(" + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ")";
+  function grabSelectors() {
+
   }
 
-  function changeTurn() {
-    $('#tictactoe').removeClass(turn);
-    if (turn === 'x') {
-      turn = 'o';
-    } else {
-      turn = 'x';
-    }
-    $('#tictactoe').addClass(turn);
+  function resize() {
+    boardElement.style = 'transform: scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
+  }
+
+  function changeSide() {
+    boardElement.className = side;
+    side = !side;
   }
 
   function clickSquare(e) {
-    var $square, i, j;
-    $square = $(e.currentTarget);
-    i = $square.data('i');
-    j = $square.data('j');
+    e.currentTarget
+    // How to determine square position from event?
     tictactoe(i, j);
   }
 
-  function tictactoe(i, j) {
+  function tictactoe(e) {
     var $square;
     if (mode && !gamePaused && !board[i][j] && (i === activeGame || !activeGame)) {
-      $square = $(".square[data-i=" + i + "][data-j=" + j + "]");
-      board[i][j] = turn;
-      $square.addClass(turn);
-      if (turn === 'x') {
+      e.currentTarget
+      $square = $('.square[data-i=' + i + '][data-j=' + j + ']');
+      board[i][j] = side;
+      $square.addClass(side);
+      if (side === 'x') {
         $square.html('&#215;');
       } else {
         $square.html('&#9675;');
       }
       movecount += 1;
-      showWinners(turn, i);
+      showWinners(side, i);
       if (!gamePaused) {
         activeGame = j;
         if (gameFull(board[j])) {
-          activeGame = void 0;
+          activeGame = u;
         }
         showActiveGame();
-        changeTurn();
+        changeSide();
       }
-      if (mode === 1 && turn === 'o') {
+      if (mode === 1 && side === 'o') {
         return playRandomSquare();
       }
     }
@@ -174,10 +174,10 @@
 
   function showActiveGame() {
     if (activeGame) {
-      $(".game").removeClass('active');
-      $(".game." + letters[activeGame]).addClass('active');
+      $('.game').removeClass('active');
+      $('.game.' + letters[activeGame]).addClass('active');
     } else {
-      $(".game").addClass('active');
+      $('.game').addClass('active');
     }
   }
 
@@ -190,55 +190,55 @@
     return true;
   }
 
-  function showWinners(turn, i) {
+  function showWinners(side, i) {
     var $game, j, overallWinners, winner, winners, _len, _len1;
-    winners = findWinners(board[i], turn);
+    winners = findWinners(board[i], side);
     for (k = 0; k < winners.length; k++) {
       var winner = winners[k];
       for (j = 0; j < winner.length; j++) {
-        $(".game." + letters[i] + " .square." + letters[j]).addClass('won');
+        $('.game.' + letters[i] + ' .square.' + letters[j]).addClass('won');
       }
     }
     if (winners.length > 0 && !gameWinners[i]) {
-      gameWinners[i] = turn;
-      $game = $(".game." + letters[i]);
-      $game.addClass("won").addClass(turn);
-      if (turn === 'x') {
+      gameWinners[i] = side;
+      $game = $('.game.' + letters[i]);
+      $game.addClass('won').addClass(side);
+      if (side === 'x') {
         $game.find('.winner').html('&#215;');
       } else {
         $game.find('.winner').html('&#9675;');
       }
     }
-    overallWinners = findWinners(gameWinners, turn);
+    overallWinners = findWinners(gameWinners, side);
     if (movecount >= 9 * 9 && overallWinners.length === 0) {
-      $(".game").removeClass('active');
+      $('.game').removeClass('active');
       gamePaused = true;
       showWinnerModal();
       if (gameInterval) {
         clearInterval(gameInterval);
       }
     } else if (overallWinners.length > 0) {
-      $(".game").removeClass('active');
+      $('.game').removeClass('active');
       gamePaused = true;
-      showWinnerModal(turn);
+      showWinnerModal(side);
       if (gameInterval) {
         clearInterval(gameInterval);
       }
     }
   }
 
-  function showWinnerModal(turn) {
-    if (turn === 'x') {
-      $('.overallwinner .turn').html('&#215; won.');
-    } else if (turn === 'o') {
-      $('.overallwinner .turn').html('&#9675; won.');
+  function showWinnerModal(side) {
+    if (side) {
+      $('.overallwinner .side').html('&#215; won.');
+    } else if (side === 'o') {
+      $('.overallwinner .side').html('&#9675; won.');
     } else {
-      $('.overallwinner .turn').html('A tie!');
+      $('.overallwinner .side').html('A tie!');
     }
     $('.overallwinner').removeClass('x');
     $('.overallwinner').removeClass('o');
-    if (turn) {
-      $('.overallwinner').addClass(turn);
+    if (side) {
+      $('.overallwinner').addClass(side);
     }
     $('.overallwinner').css({
       opacity: 0,
@@ -252,22 +252,22 @@
     });
   }
 
-  function findWinners(board, turn) {
+  function findWinners(board, side) {
     var column, row, winners;
     winners = [];
-    if (board[0] === turn && board[4] === turn && board[8] === turn) {
+    if (board[0] === side && board[4] === side && board[8] === side) {
       winners.push([0, 4, 8]);
     }
-    if (board[2] === turn && board[4] === turn && board[6] === turn) {
+    if (board[2] === side && board[4] === side && board[6] === side) {
       winners.push([0, 2, 4]);
     }
     for (row = 0; row < 3; row++) {
-      if (board[row * 3] === turn && board[row * 3 + 1] === turn && board[row * 3 + 2] === turn) {
+      if (board[row * 3] === side && board[row * 3 + 1] === side && board[row * 3 + 2] === side) {
         winners.push([row * 3, row * 3 + 1, row * 3 + 2]);
       }
     }
     for (column = 0; column < 3; column++) {
-      if (board[column] === turn && board[column + 3] === turn && board[column + 6] === turn) {
+      if (board[column] === side && board[column + 3] === side && board[column + 6] === side) {
         winners.push([column, column + 3, column + 6]);
       }
     }
@@ -278,7 +278,7 @@
     gameInterval = setInterval(function() {
         playRandomSquare();
         if (forever) {
-          $('#playagain:visible').click();
+          $('.playagain:visible').click();
         }
       }, 100);
   }
@@ -286,6 +286,9 @@
   function playRandomSquare() {
     var $squares, randInt;
     $squares = $('.game.active .square:not(.x):not(.o)');
+    for(i in squares) {
+
+    }
     randInt = Math.floor(Math.random() * $squares.length);
     $squares.eq(randInt).click();
   }
