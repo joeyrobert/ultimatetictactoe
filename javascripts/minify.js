@@ -4,8 +4,8 @@ var fs = require('fs'),
 
 // Custom replace
 function keywordReplace(code) {
-	var keywords = ['overallwinner', 'tictactoe', 'game', 'square', 'winner', 'side', 'playagain', 'intro', 'player0', 'player1', 'player2', 'active'];
-	var mapping = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'];
+	var keywords = ['overallwinner', 'tictactoe', 'game', 'square', 'winner', 'side', 'playagain', 'intro', 'player', 'active', 'invisible', 'Elements'];
+	var mapping = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm'];
 	for(var i = 0; i < keywords.length; i++) {
 		code = code.replace(new RegExp(keywords[i], 'g'), mapping[i]);
 	}
@@ -62,7 +62,9 @@ console.log('Minified code size: ' + minifiedCode.length);
 // Insert into golf.html from shim.html
 var shimHTML = fs.readFileSync('../shim.html', 'ascii');
 var golfHTML = shimHTML.replace('{{GOLF}}', minifiedCode);
-fs.writeFileSync('../golf.html', golfHTML, {encoding: 'ascii'});
+var codeHTML = shimHTML.replace('{{GOLF}}', code);
+fs.writeFileSync('../golf.min.html', golfHTML, {encoding: 'ascii'});
+fs.writeFileSync('../golf.html', codeHTML, {encoding: 'ascii'});
 
 // Write minified JS to tictactoe.golf.min.js
 fs.writeFileSync('tictactoe.golf.min.js', minifiedCode, {encoding: 'ascii'});
