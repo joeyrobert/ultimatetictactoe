@@ -1,15 +1,11 @@
 (function () {
   var board, gameWinners, side, movecount, activeGame, gamePaused, mode, gameInterval, u = void 0,
-      boardElement, introElement, overallWinnerElement, squareElements,
-      d = document, setTimeout, overallWinners, winner, winners, column, row,
+      el, d = document, qsa = d.querySelectorAll.bind(d), overallWinners, winner, winners,
       combinations = [[0,4,8],[2,4,6],[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]];
 
   function newGameState() {
-    board = [];
+    board = [[], [], [], [], [], [], [], [], []];
     gameWinners = [];
-    for (var i = 0; i < 9; i++) {
-      board[i] = [];
-    }
     side = true; // true == x, false == o
     movecount = 0;
     activeGame = u;
@@ -17,7 +13,7 @@
     mode = u;
   }
 
-  function player(m) {
+  function player() {
     mode = m;
     hideModal();
     gamePaused = false;
@@ -32,30 +28,29 @@
   }
 
   function loopNode(map) {
-    var y = '', j;
-    for(j = 1; j < map.length; j++)
-      y += renderHTML(map[j]);
+    var y = '', i;
+    for(i = 1; i < map.length; i++)
+      y += renderHTML(map[i]);
     return y;
   }
 
-  function renderHTML(map) {
-    var y = '', i;
-    if(typeof map == 'string')
-      y = map;
-    else if(map[0] > 0)
-      for(i = 0; i < map[0]; i++)
-        y += loopNode(map);
-    else
-      y = '<div class="'+map[0]+'">' + loopNode(map) + '</div>';
+  function repeat(y, i) {
+    var x = '', j;
+    for(j = 0; j < i; j++)
+      x += y;
+    return x;
+  }
 
-    return y;
+  function renderHTML(map) {
+    var x = loopNode(map);
+    return typeof map == 'string' ? map : (map[0] > 0 ? repeat(x, map[0]) : '<div class="'+map[0]+'">' + x + '</div>');
   }
 
   function draw() {
     b.innerHTML = renderHTML(
       ['tictactoe',
         [9,
-          ['game',
+          ['game active',
             [9,
               ['square']
             ],
@@ -68,24 +63,43 @@
         ],
         ['intro',
           ['new', 'New Game'],
-          ['player0', '0 players'],
-          ['player1', '1 player'],
-          ['player2', '2 players']
+          ['player', '0 players'],
+          ['player', '1 player'],
+          ['player', '2 players']
         ]
       ]
     );
   }
 
   function getElements() {
-    boardElement = b.childNodes[0];
-    introElement = d.querySelector('.intro');
-    overallWinnerElement = d.querySelector('.overallwinner');
-    gameElements = d.querySelectorAll('.game');
-    squareElements = d.querySelectorAll('.square');
+    // boardElement = 0, introElement = 1, overallWinnerElement = 2, gameElements = 3, squareElements = 4, playAgain = 5, player(1,2,3) = 6
+    el = [b.childNodes[0], qsa('.intro'), qsa('.overallwinner'), qsa('.game'), qsa('.square'), qsa('.playagain'), qsa('.player')];
+  }
+
+  function renderCSS() {
+
+  }
+
+  function each(els, fnc) {
+    for(var i = 0; i < els; i++) fnc(els[0]);
+  }
+
+  function bindClick(els, fnc) {
+    each(els, function(x) { x.addEventListener('click', fnc) });
+  }
+
+  function applyStyle(els, style) {
+    each(els, function(x) { x.style = style });
+  }
+
+  function bindEvents() {
+      bindClick(el[4], clickSquare);
+      bindClick(el[5], start);
+      bindClick(el[6], player);
   }
 
   function resize() {
-    boardElement.style = 'transform: scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
+    el[0].style = 'transform: scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
   }
 
   function clickSquare(e) {
@@ -120,22 +134,20 @@
   }
 
   function showActiveGame() {
-    for(var i = 0; gameElements[i]; i++)
-      gameElements[i].className = 'game';
-     gameElements[activeGame].className += activeGame ? ' active':'';
+    for(var i = 0; el[3][i]; i++)
+      el[3][i].className = 'game';
+    el[3][activeGame].className += activeGame ? ' active':'';
   }
 
   function gameFull(board) {
-    for (var i = 0; i < 9; i++) {
-      if (!board[i]) {
+    for(var i = 0; i < 9; i++)
+      if (!board[i])
         return false;
-      }
-    }
     return true;
   }
 
   function finishGame(draw, winner) {
-    gameElements.className = 'game';
+    el[3].className = 'game';
     gamePaused = true;
     showWinnerModal(true, side);
     if (gameInterval) {
@@ -149,8 +161,8 @@
 
   function showWinners(side, i) {
     winners = findWinners(board[i], side);
-    for (var k = 0; k < winners.length; k++) {
-      for (var j = 0; j < winners[k].length; j++) {
+    for(var k = 0; k < winners.length; k++) {
+      for(var j = 0; j < winners[k].length; j++) {
         squareElements[i*9 + j].className = 'square won';
       }
     }
@@ -184,13 +196,12 @@
   }
 
   function findWinners(board, side) {
-    var winners = [], i, x;
+    var winners = [];
 
-    for(i = 0; i < combinations.length; i++) {
-      x = combinations[i]
+    each(combinations, function(x) {
       if(board[x[0]] == side && board[x[1]] == side && board[x[2]] == side)
         winners.push(x);
-    }
+    });
 
     return winners;
   }
@@ -212,8 +223,8 @@
     newGameState();
     draw();
     getElements();
-    showActiveGame();
     resize();
+    bindEvents();
   }
 
   window.onresize = resize;
