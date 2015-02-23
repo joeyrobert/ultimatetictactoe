@@ -4,19 +4,14 @@
   margin-left: auto;
   margin-right: auto;
   transform-origin: 50% 0;
-  -webkit-transform-origin: 50% 0;
-  -moz-transform-origin: 50% 0;
-  -ms-transform-origin: 50% 0;
-  -o-transform-origin: 50% 0;
-  /*border-color: #0079AD;*/
   border-width: 3px;
   border-style: solid;
 }
 
-.tictactoe.x {
+.tictactoe.true {
   border-color: #8AFF7A;
 }
-.tictactoe.o {
+.tictactoe.false {
   border-color: #FF7A7A;
 }
 
@@ -30,16 +25,16 @@
   line-height: 43px;
   z-index: 10;
 }
-.square.x {
+.square.true {
   background-color: #8AFF7A;
 }
-.square.o {
+.square.false {
   background-color: #FF7A7A;
 }
-.game.active:hover .square.x:hover {
+.game.active:hover .square.true:hover {
   background-color: #BEFFB5;
 }
-.game.active:hover .square.o:hover {
+.game.active:hover .square.false:hover {
   background-color: #FFBFBF;
 }
 .game.active {
@@ -51,7 +46,7 @@
 .game.active:hover .square:hover {
   background-color: #E8FBFF;
 }
-.game.won.x.active .winner, .game.won.o.active .winner {
+.game.won.true.active .winner, .game.won.false.active .winner {
   display: none;
 }
 .game {
@@ -71,22 +66,18 @@
   opacity: 0.8;
   z-index: 1;
   overflow: hidden;
-  -webkit-transition: opacity .25s ease-in-out;
-     -moz-transition: opacity .25s ease-in-out;
-      -ms-transition: opacity .25s ease-in-out;
-       -o-transition: opacity .25s ease-in-out;
-          transition: opacity .25s ease-in-out;
+  transition: opacity .25s ease-in-out;
 }
-.game.won.x:hover .winner, .game.won.o:hover .winner {
+.game.won.true:hover .winner, .game.won.false:hover .winner {
   opacity: 0;
 }
-.game.won.x .winner, .game.won.o .winner {
+.game.won.true .winner, .game.won.false .winner {
   display: block;
 }
-.game.won.x .winner {
+.game.won.true .winner {
   background-color: rgb(138,255,122);
 }
-.game.won.o .winner {
+.game.won.false .winner {
   background-color: rgb(255,122,122);
 }
 .intro, .overallwinner {
@@ -96,11 +87,7 @@
   background-color: #fff;
   z-index: 20;
   text-align: center;
-  -webkit-transition: opacity .25s ease-in-out;
-     -moz-transition: opacity .25s ease-in-out;
-      -ms-transition: opacity .25s ease-in-out;
-       -o-transition: opacity .25s ease-in-out;
-          transition: opacity .25s ease-in-out;
+  transition: opacity .25s ease-in-out;
 }
 .overallwinner {
   width: 200px;
@@ -110,10 +97,10 @@
   margin-left: 122px;
   margin-top: 200px;
 }
-.overallwinner.x {
+.overallwinner.true {
   background-color: #BEFFB5;
 }
-.overallwinner.o {
+.overallwinner.false {
   background-color: #FFBFBF;
 }
 .intro {
