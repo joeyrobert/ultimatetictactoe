@@ -31,10 +31,10 @@
   }
 
   function loopNode(map) {
-    var y = '', i;
-    for(i = 1; i < map.length; i++)
-      y += renderHTML(map[i]);
-    return y;
+    return map.slice(1).reduce(function(x, y) {
+      return x + renderHTML(y);
+    }, '');
+    // var y = '', i; for(i = 1; i < map.length; i++) y += renderHTML(map[i]); return y;
   }
 
   function repeat(y, i) {
@@ -48,7 +48,7 @@
 
   function draw() {
     b.innerHTML = renderHTML(
-      ['tictactoe',
+      ['tictactoe true',
         [9,
           ['game active',
             [9,
@@ -113,11 +113,10 @@
   }
 
   function tictactoe(i, j) {
-    if (mode && !gamePaused && !board[i][j] && (i === activeGame || !activeGame)) {
+    if (mode >= 0 && !gamePaused && !board[i][j] && (i == activeGame || activeGame == u)) {
       square = el[4][i*9 + j];
       board[i][j] = side;
       square.className = 'square ' + side;
-      debugger
       square.innerHTML = character();
       movecount += 1;
       showWinners(side, i);
@@ -129,10 +128,10 @@
         showActiveGame();
 
         // Change side
-        el[0][0].className = side;
         side = !side;
+        el[0].className = 'tictactoe ' + side;
       }
-      if (mode === 1 && !side) {
+      if (mode == 1 && !side) {
         return playRandomSquare();
       }
     }
@@ -141,7 +140,7 @@
   function showActiveGame() {
     for(var i = 0; el[3][i]; i++)
       el[3][i].className = 'game';
-    el[3][activeGame].className += activeGame ? ' active':'';
+    el[3][activeGame].className = 'game active';
   }
 
   function gameFull(board) {
@@ -173,12 +172,12 @@
     }
     if (winners.length > 0 && !gameWinners[i]) {
       gameWinners[i] = side;
-      game[i].className = 'game won ' + side;
-      game[i].innerHTML = character();
+      el[3][i].className = 'game won ' + side;
+      el[3][i].innerHTML += character();
     }
 
     overallWinners = findWinners(gameWinners, side);
-    if (movecount >= 81 && overallWinners.length === 0) {
+    if (movecount >= 81 && overallWinners.length == 0) {
       finishGame(true)
     } else if (overallWinners.length > 0) {
       finishGame(false, side)
@@ -187,12 +186,12 @@
 
   function showWinnerModal(winner, side) {
     winner ? character() + '; won.' : 'A tie!';
-    overallWinnerElement.className = side;
-    overallWinnerElement.css({
+    el[2].className = side;
+    el[2].css({
       opacity: 0,
       display: 'block'
     });
-    overallWinnerElement.css({
+    el[2].css({
       opacity: 1
     });
     winnerElement.css({
@@ -214,11 +213,21 @@
   function playRandomGame() {
     gameInterval = setInterval(function() {
         playRandomSquare();
-      }, 100);
+      }, 1000);
+  }
+
+  function randInt() {
+    return Math.floor(Math.random() * 9);
   }
 
   function playRandomSquare() {
-    Math.floor(Math.random() * 3);
+    var i = randInt(), j;
+    if(activeGame == u) activeGame = i;
+    do {
+      j = randInt();
+    } while(board[activeGame][j] != u);
+
+    tictactoe(activeGame, j);
   }
 
   function start() {
