@@ -14,6 +14,7 @@
   }
 
   function player() {
+    debugger
     mode = m;
     hideModal();
     gamePaused = false;
@@ -68,7 +69,7 @@
           ['player', '2 players']
         ]
       ]
-    );
+    ) + renderCSS();
   }
 
   function getElements() {
@@ -77,7 +78,7 @@
   }
 
   function renderCSS() {
-
+    return "<style>.tictactoe{width:444px;height:444px;margin-left:auto;margin-right:auto;transform-origin:50% 0;-webkit-transform-origin:50% 0;-moz-transform-origin:50% 0;-ms-transform-origin:50% 0;-o-transform-origin:50% 0;border-width:3px;border-style:solid}.tictactoe.x{border-color:#8AFF7A}.tictactoe.o{border-color:#FF7A7A}.square{width:47px;height:47px;float:left;font-size:47px;text-align:center;border:1px solid #CCC;line-height:43px;z-index:10}.square.x{background-color:#8AFF7A}.square.o{background-color:#FF7A7A}.game.active:hover .square.x:hover{background-color:#BEFFB5}.game.active:hover .square.o:hover{background-color:#FFBFBF}.game.active{background-color:#91EDFF}.game.active:hover{background-color:#C7F4FC}.game.active:hover .square:hover{background-color:#E8FBFF}.game.won.x.active .winner,.game.won.o.active .winner{display:none}.game{width:148px;height:148px;float:left}.winner{width:147px;height:147px;text-align:center;position:absolute;font-size:200px;line-height:128px;display:none;opacity:.8;z-index:1;overflow:hidden;-webkit-transition:opacity .25s ease-in-out;-moz-transition:opacity .25s ease-in-out;-ms-transition:opacity .25s ease-in-out;-o-transition:opacity .25s ease-in-out;transition:opacity .25s ease-in-out}.game.won.x:hover .winner,.game.won.o:hover .winner{opacity:0}.game.won.x .winner,.game.won.o .winner{display:block}.game.won.x .winner{background-color:#8aff7a}.game.won.o .winner{background-color:#ff7a7a}.intro,.overallwinner{position:absolute;border-radius:10px;box-shadow:0 0 13px #000;background-color:#fff;z-index:20;text-align:center;-webkit-transition:opacity .25s ease-in-out;-moz-transition:opacity .25s ease-in-out;-ms-transition:opacity .25s ease-in-out;-o-transition:opacity .25s ease-in-out;transition:opacity .25s ease-in-out}.overallwinner{width:200px;height:44px;display:none;line-height:44px;margin-left:122px;margin-top:200px}.overallwinner.x{background-color:#BEFFB5}.overallwinner.o{background-color:#FFBFBF}.intro{width:200px;height:170px;margin-left:122px;margin-top:137px}.btn{width:165px;height:25px}</style>";
   }
 
   function each(els, fnc) {
@@ -93,9 +94,9 @@
   }
 
   function bindEvents() {
-      bindClick(el[4], clickSquare);
-      bindClick(el[5], start);
-      bindClick(el[6], player);
+    bindClick(el[4], clickSquare);
+    bindClick(el[5], start);
+    bindClick(el[6], player);
   }
 
   function resize() {
@@ -103,6 +104,7 @@
   }
 
   function clickSquare(e) {
+    debugger
     e.currentTarget;
     // How to determine square position from event?
     tictactoe(i, j);
