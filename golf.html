@@ -141,18 +141,27 @@
     return [].indexOf.call(node.parentNode.children, node);
   }
 
+  function addClass(elz, cls) {
+    elz.classList.add(cls);
+  }
+
+  function removeClass(elz, cls) {
+    elz.classList.remove;
+  }
+
   function hideModal() {
-    el[1].className = 'invisible';
+    addClass(el[1], 'invisible');
     setTimeout(function() {
       el[1][0].style.display = 'none';
     }, 250);
   }
 
   function loopNode(map) {
-    return map.slice(1).reduce(function(x, y) {
-      return x + renderHTML(y);
-    }, '');
-    // var y = '', i; for(i = 1; i < map.length; i++) y += renderHTML(map[i]); return y;
+    // return map.slice(1).reduce(function(x, y) {
+    //   console.log('x:', x, 'y:', y);
+    //   return x + renderHTML(y);
+    // }, '');
+    var y = '', i; for(i = 1; i < map.length; i++) y += renderHTML(map[i]); return y;
   }
 
   function repeat(y, i) {
@@ -234,7 +243,7 @@
     if (mode >= 0 && !gamePaused && !board[i][j] && (i == activeGame || activeGame == u)) {
       square = el[4][i*9 + j];
       board[i][j] = side;
-      square.className = 'square ' + side;
+      addClass(square,side);
       square.innerHTML = character();
       movecount += 1;
       showWinners(side, i);
@@ -247,7 +256,7 @@
 
         // Change side
         side = !side;
-        el[0].className = 'tictactoe ' + side;
+        addClass(el[0], side);
       }
       if (mode == 1 && !side) {
         return playRandomSquare();
@@ -257,8 +266,8 @@
 
   function showActiveGame() {
     for(var i = 0; el[3][i]; i++)
-      el[3][i].className = 'game';
-    el[3][activeGame].className = 'game active';
+      removeClass(el[3][i], 'active');
+    addClass(el[3][activeGame], 'active');
   }
 
   function gameFull(board) {
@@ -269,7 +278,8 @@
   }
 
   function finishGame(draw, winner) {
-    el[3].className = 'game';
+    debugger
+   // el[3].className = 'game';
     gamePaused = true;
     showWinnerModal(true, side);
     if (gameInterval) {
@@ -278,16 +288,18 @@
   }
 
   function character() {
-    return side ? '&#215' : '&#9675';
+    return (side ? '&#215' : '&#9675') + ';';
   }
 
   function showWinners(side, i) {
     winners = findWinners(board[i], side);
     for(var k = 0; k < winners.length; k++) {
       for(var j = 0; j < winners[k].length; j++) {
-        el[4][i*9 + j].className = 'square won';
+        addClass(el[4][i*9 + winners[k][j]], 'won');
+        addClass(el[4][i*9 + winners[k][j]], side);
       }
     }
+    debugger
     if (winners.length > 0 && !gameWinners[i]) {
       gameWinners[i] = side;
       el[3][i].className = 'game won ' + side;
@@ -303,18 +315,13 @@
   }
 
   function showWinnerModal(winner, side) {
-    winner ? character() + '; won.' : 'A tie!';
+    winner ? character() + ' won.' : 'A tie!';
     el[2].className = side;
-    el[2].css({
-      opacity: 0,
-      display: 'block'
-    });
-    el[2].css({
-      opacity: 1
-    });
-    winnerElement.css({
-      opacity: 1
-    });
+    el[2].display.style = 'opacity: 0; display: block';
+    el[2].display.style = 'opacity: 1; display: block';
+    // winnerElement.css({
+    //   opacity: 1
+    // });
   }
 
   function findWinners(board, side) {
@@ -331,7 +338,7 @@
   function playRandomGame() {
     gameInterval = setInterval(function() {
         playRandomSquare();
-      }, 1000);
+      }, 100);
   }
 
   function randInt() {
@@ -339,12 +346,10 @@
   }
 
   function playRandomSquare() {
-    var i = randInt(), j;
-    if(activeGame == u) activeGame = i;
+    if(activeGame == u) activeGame = randInt();
     do {
-      j = randInt();
+      var j = randInt();
     } while(board[activeGame][j] != u);
-
     tictactoe(activeGame, j);
   }
 

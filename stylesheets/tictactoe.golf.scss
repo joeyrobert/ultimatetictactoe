@@ -1,0 +1,130 @@
+.tictactoe {
+  w: 444px,
+  h: 444px,
+  m: 0 auto,
+  transform-origin: 50% 0,
+  border-w: 3px,
+  border-style: solid,
+  &.true {
+    border-color: #8AFF7A
+  }
+  &.false {
+    border-color: #FF7A7A
+  }
+}
+
+.square {
+  w: 47px,
+  h: 47px,
+  f: left,
+  font-size: 47px,
+  text-align: center,
+  border: 1px solid #CCC,
+  line-h: 43px,
+  z-index: 10,
+  &.true {
+    b: #8AFF7A
+  }
+  &.false {
+    b: #FF7A7A
+  }
+}
+
+.game {
+  &.active {
+    &:hover {
+      .square {
+        &.true:hover {
+          b: #BEFFB5
+        }
+        &.false:hover {
+          b: #FFBFBF
+        }
+        &:hover {
+          b: #E8FBFF
+        }
+      }
+      b: #C7F4FC
+    }
+    b: #91EDFF
+  }
+  &.won {
+    &.true.active .winner, &.false.active .winner {
+      d: none
+    }
+  }
+  w: 148px,
+  h: 148px,
+  f: left
+}
+
+.winner {
+  w: 147px,
+  h: 147px,
+  text-align: center,
+  position: absolute,
+  font-size: 200px,
+  line-h: 128px,
+  d: none,
+  opacity: 0.8,
+  z-index: 1,
+  overflow: hidden,
+  t: opacity .25s ease-in-out
+}
+
+.game.won {
+  &.true:hover .winner, &.false:hover .winner {
+    opacity: 0
+  }
+  &.true .winner, &.false .winner {
+    d: block
+  }
+  &.true .winner {
+    b: rgb(138, 255, 122)
+  }
+  &.false .winner {
+    b: rgb(255, 122, 122)
+  }
+}
+
+.intro {
+  position: absolute,
+  border-radius: 10px,
+  box-shadow: 0px 0px 13px #000,
+  b: #fff,
+  z-index: 20,
+  text-align: center,
+  t: opacity .25s ease-in-out
+}
+
+.overallwinner {
+  position: absolute,
+  border-radius: 10px,
+  box-shadow: 0px 0px 13px #000,
+  b: #fff,
+  z-index: 20,
+  text-align: center,
+  t: opacity .25s ease-in-out,
+  w: 200px,
+  h: 44px,
+  d: none,
+  line-h: 44px,
+  m: 200px 120px 0 0,
+  &.true {
+    b: #BEFFB5
+  }
+  &.false {
+    b: #FFBFBF
+  }
+}
+.intro {
+  w: 200px,
+  h: 170px,
+  margin-left: 122px,
+  margin-top: 137px,
+  m: 137px 122px 0 0
+}
+.btn {
+  w: 165px,
+  h: 25px
+}

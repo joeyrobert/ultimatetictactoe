@@ -1,0 +1,8 @@
+Replacements:
+w: width
+h: height
+d: display
+m: margin
+t: transition
+b: background
+f: float
