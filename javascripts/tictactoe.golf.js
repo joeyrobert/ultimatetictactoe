@@ -23,18 +23,18 @@
     return [].indexOf.call(node.parentNode.children, node);
   }
 
-  function addClass(elz, cls) {
-    elz.classList.add(cls);
+  function addClass(elz, cls, cls2) {
+    elz.classList.add(cls, cls2);
   }
 
   function removeClass(elz, cls) {
-    elz.classList.remove;
+    elz.classList.remove(cls);
   }
 
   function hideModal() {
     addClass(el[1], 'invisible');
     setTimeout(function() {
-      el[1][0].style.display = 'none';
+      el[1].style.display = 'none';
     }, 250);
   }
 
@@ -82,7 +82,7 @@
 
   function getElements() {
     // boardElement = 0, introElement = 1, overallWinnerElement = 2, gameElements = 3, squareElements = 4, playAgain = 5, player(1,2,3) = 6
-    el = [b.childNodes[0], qsa('.intro'), qsa('.overallwinner'), qsa('.game'), qsa('.square'), qsa('.playagain'), qsa('.player')];
+    el = [b.childNodes[0], qsa('.intro')[0], qsa('.overallwinner')[0], qsa('.game'), qsa('.square'), qsa('.playagain'), qsa('.player')];
   }
 
   function renderCSS() {
@@ -161,12 +161,10 @@
 
   function finishGame(draw, winner) {
     debugger
-   // el[3].className = 'game';
     gamePaused = true;
     showWinnerModal(true, side);
-    if (gameInterval) {
+    if (gameInterval)
       clearInterval(gameInterval);
-    }
   }
 
   function character() {
@@ -175,32 +173,26 @@
 
   function showWinners(side, i) {
     winners = findWinners(board[i], side);
-    for(var k = 0; k < winners.length; k++) {
-      for(var j = 0; j < winners[k].length; j++) {
-        addClass(el[4][i*9 + winners[k][j]], 'won');
-        addClass(el[4][i*9 + winners[k][j]], side);
-      }
-    }
-    debugger
+    for(var k = 0; k < winners.length; k++)
+      for(var j = 0; j < winners[k].length; j++)
+        addClass(el[4][i*9 + winners[k][j]], 'won', side);
+
     if (winners.length > 0 && !gameWinners[i]) {
       gameWinners[i] = side;
-      el[3][i].className = 'game won ' + side;
+      addClass(el[3][i], 'won', side);
       el[3][i].innerHTML += character();
     }
 
     overallWinners = findWinners(gameWinners, side);
-    if (movecount >= 81 && overallWinners.length == 0) {
-      finishGame(true)
-    } else if (overallWinners.length > 0) {
-      finishGame(false, side)
-    }
+    overallWinners.length > 0 ? finishGame(false, side) : movecount >= 81 && finishGame(true)
+    // if (overallWinners.length > 0) finishGame(false, side) else if (movecount >= 81) finishGame(true)
   }
 
   function showWinnerModal(winner, side) {
     winner ? character() + ' won.' : 'A tie!';
     el[2].className = side;
-    el[2].display.style = 'opacity: 0; display: block';
-    el[2].display.style = 'opacity: 1; display: block';
+    el[2].style = 'opacity: 0; display: block';
+    el[2].style = 'opacity: 1; display: block';
     // winnerElement.css({
     //   opacity: 1
     // });
