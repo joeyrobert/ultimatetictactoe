@@ -1,0 +1,124 @@
+* {
+  transition: opacity .25s ease-in-out;
+  font-family: sans-serif;
+  transform-origin: 50% 0;
+}
+
+.tictactoe {
+  width: 432px;
+  height: 432px;
+  margin: 0 auto;
+  border-width: 9px;
+  border-style: solid;
+}
+
+.tictactoe.true {
+  border-color: #8AFF7A;
+}
+.tictactoe.false {
+  border-color: #FF7A7A;
+}
+.square, .game {
+  width: calc(100% / 3);
+  height: calc(100% / 3);
+  float: left;
+}
+.square {
+  font-size: 47px;
+  text-align: center;
+  line-height: 43px;
+  z-index: 10;
+}
+.square.true {
+  background: #8AFF7A;
+}
+.square.false {
+  background: #FF7A7A;
+}
+.game.active .square.true:hover {
+  background: #BEFFB5;
+}
+.game.active .square.false:hover {
+  background: #FFBFBF;
+}
+.game.active {
+  background: #91EDFF;
+}
+.game.active:hover {
+  background: #C7F4FC;
+}
+.game.active .square:hover {
+  background: #E8FBFF;
+}
+.game.won.true.active .winner, .game.won.false.active .winner {
+  display: none;
+}
+
+.winner {
+  width: 144px;
+  height: 144px;
+  text-align: center;
+  position: absolute;
+  font-size: 200px;
+  line-height: 128px;
+  display: none;
+  opacity: 0.8;
+  z-index: 1;
+  overflow: hidden;
+}
+.game.won.true:hover .winner, .game.won.false:hover .winner {
+  opacity: 0;
+}
+.invisible {
+  opacity: 0;
+}
+.game.won.true .winner, .game.won.false .winner {
+  display: block;
+}
+.game.won.true .winner {
+  background: #8AFF7A;
+}
+.game.won.false .winner {
+  background: #FF7A7A;
+}
+.intro, .overallwinner {
+  position: absolute;
+  border-radius: 10px;
+  box-shadow: 0px 0px 13px #000;
+  background: #fff;
+  z-index: 2;
+  text-align: center;
+}
+.overallwinner {
+  width: 200px;
+  height: 44px;
+  display: none;
+  line-height: 44px;
+  margin-left: 122px;
+  margin-top: 200px;
+}
+.overallwinner.true {
+  background: #BEFFB5;
+}
+.overallwinner.false {
+  background: #FFBFBF;
+}
+.intro {
+  width: 150px;
+  height: 114px;
+  margin-left: 150px;
+  margin-top: 168px;
+  padding: 3px;
+}
+.new {
+  font-weight: bold;
+}
+.player {
+  border: 5px outset #8AFF7A;
+  background: #8AFF7A;
+  margin-bottom: 5px;
+  border-radius: 10px;
+}
+.player:hover {
+  border-style: inset;
+}

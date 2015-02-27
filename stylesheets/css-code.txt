@@ -6,3 +6,10 @@ m: margin
 t: transition
 b: background
 f: float
+p: position
+o: opacity
+z: z-index
+
+things to apply to everything:
+
+  t: opacity .25s ease-in-out

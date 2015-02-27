@@ -3,7 +3,7 @@ var fs = require('fs'),
     child_process = require('child_process'),
     UglifyJS = require('uglify-js');
 
-function minify() {
+function minifyWithReport() {
   // Custom replace
   function keywordReplace(code) {
     var keywords = ['overallwinner', 'tictactoe', 'game', 'square', 'winner', 'side', 'playagain', 'intro', 'player', 'active', 'invisible', 'Elements'];
@@ -63,6 +63,8 @@ function minify() {
     'Minified code size: ' + minifiedCode.length
   ].join('\n');
 
+  console.log(report)
+
   // Insert into golf.html from shim.html
   var shimHTML = fs.readFileSync('../shim.html', 'ascii');
   var golfHTML = shimHTML.replace('{{GOLF}}', minifiedCode);
@@ -75,8 +77,16 @@ function minify() {
   child_process.execFile('notify-send', ['Build Completed', report])
 }
 
+function safeMinifyWithReport() {
+  try {
+    minifyWithReport();
+  } catch(e) {
+    console.log(e);
+  }
+}
+
 // Initial minification
-minify();
+safeMinifyWithReport();
 
 // fs watcher
-fs.watchFile('tictactoe.golf.js', minify);
+fs.watchFile('tictactoe.golf.js', safeMinifyWithReport);
