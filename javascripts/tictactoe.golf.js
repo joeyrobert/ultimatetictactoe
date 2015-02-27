@@ -1,6 +1,6 @@
 (function () {
   var board, gameWinners, side, movecount, activeGame, gamePaused, mode, gameInterval, danceInterval, u = void 0,
-      d = document, qsa = d.querySelectorAll.bind(d), mySetInterval = setInterval, myClearInterval = clearInterval,
+      d = document, qsa = d.querySelectorAll.bind(d), mySetInterval = setInterval, myClearInterval = clearInterval, mySetTimeout = setTimeout,
       combinations = [[0,4,8],[2,4,6],[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]],
       ab0,ab1,ab2,ab3,ab4,ab6,ab7;
 
@@ -169,6 +169,8 @@
       ]
     );
 
+    mySetTimeout(onresize, 50);
+
     // boardElement = 0, introElement = 1, overallWinnerElement = 2, gameElements = 3, squareElements = 4, player(1,2,3) = 6, winnerElements = 7
     ab0 = b.childNodes[1], ab1 = qsa('.intro')[0], ab2 = qsa('.overallwinner')[0], ab3 = qsa('.game'), ab4 = qsa('.square'), ab6 = qsa('.player'), ab7 = qsa('.winner');
 
@@ -182,7 +184,7 @@
     bindClick(ab6, function(e) {
       mode = siblingNumber(e.target)-1;
       addClass(ab1, 'invisible');
-      setTimeout(function() {
+      mySetTimeout(function() {
         ab1.style.display = 'none';
       }, 250);
       myClearInterval(danceInterval);
@@ -203,8 +205,6 @@
   window.onresize = function () {
     ab0.style.transform = 'scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
   };
-
-  setTimeout(onresize, 50);
 
   start();
 })();
