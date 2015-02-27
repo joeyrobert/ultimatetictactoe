@@ -1,20 +1,8 @@
 (function () {
   var board, gameWinners, side, movecount, activeGame, gamePaused, mode, gameInterval, danceInterval, u = void 0,
-      d = document, qsa = d.querySelectorAll.bind(d), overallWinners, winners,
+      d = document, qsa = d.querySelectorAll.bind(d), mySetInterval = setInterval, myClearInterval = clearInterval,
       combinations = [[0,4,8],[2,4,6],[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]],
-      ab0,ab1,ab2,ab3,ab4,ab5,ab6,ab7,
-      selectedSquare = 0;
-
-  function newGameState() {
-  }
-
-  function player(e) {
-    mode = siblingNumber(e.target)-1;
-    hideModal();
-    makeEmStop();
-    gamePaused = false;
-    if(!mode) playRandomGame();
-  }
+      ab0,ab1,ab2,ab3,ab4,ab6,ab7;
 
   function siblingNumber(node) {
     return [].indexOf.call(node.parentNode.children, node);
@@ -34,92 +22,20 @@
       addClass(elz, side);
   }
 
-  function hideModal() {
-    addClass(ab1, 'invisible');
-    setTimeout(function() {
-      ab1.style.display = 'none';
-    }, 250);
-  }
-
-  function loopNode(map) {
-    // return map.slice(1).reduce(function(x, y) {
-    //   console.log('x:', x, 'y:', y);
-    //   return x + renderHTML(y);
-    // }, '');
-    var y = '', i; for(i = 1; i < map.length; i++) y += renderHTML(map[i]); return y;
-  }
-
-  function repeat(y, i) {
-    return Array(i+1).join(y);
-  }
-
   function renderHTML(map) {
-    var x = loopNode(map);
-    return typeof map == 'string' ? map : (map[0] > 0 ? repeat(x, map[0]) : '<div class="'+map[0]+'">' + x + '</div>');
-  }
-
-  function draw() {
-    b.innerHTML = renderCSS() + renderHTML(
-      ['tictactoe true',
-        [9,
-          ['game active',
-            [9,
-              ['square']
-            ],
-            ['winner']
-          ]
-        ],
-        ['overallwinner'],
-        ['intro',
-          ['new', 'New Game'],
-          ['player', '0 players'],
-          ['player', '1 player'],
-          ['player', '2 players']
-        ]
-      ]
-    );
-  }
-
-  function getElements() {
-    // boardElement = 0, introElement = 1, overallWinnerElement = 2, gameElements = 3, squareElements = 4, playAgain = 5, player(1,2,3) = 6
-    ab0 = b.childNodes[1], ab1 = qsa('.intro')[0], ab2 = qsa('.overallwinner')[0], ab3 = qsa('.game'), ab4 = qsa('.square'), ab6 = qsa('.player'), ab7 = qsa('.winner');
-  }
-
-  function renderCSS() {
-    return '<link rel="stylesheet" type="text/css" href="stylesheets/tictactoe.minimal.golf.css">';
+    var x = '', i; for(i = 1; i < map.length; i++) x += renderHTML(map[i]);
+    return typeof map == 'string' ? map : (map[0] > 0 ? Array(map[0]+1).join(x) : '<div class="'+map[0]+'">' + x + '</div>');
   }
 
   function each(els, fnc) {
-    for(var i = 0; i < els.length; i++) {
+    for(var i = 0; i < els.length; i++)
       fnc(els[i], i);
-    }
   }
 
   function bindClick(els, fnc) {
     each(els, function(x) {
       x.addEventListener('click', fnc, true);
     });
-  }
-
-  function applyStyle(els, style) {
-    each(els, function(x) { x.style = style });
-  }
-
-  function bindEvents() {
-    bindClick(ab4, clickSquare);
-    bindClick([ab2], start);
-    bindClick(ab6, player);
-  }
-
-  function resize() {
-    console.log(b.offsetWidth, b.offsetHeight);
-    ab0.style.transform = 'scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
-  }
-
-  function clickSquare(e) {
-    var i = siblingNumber(e.target.parentNode),
-        j = siblingNumber(e.target);
-    tictactoe(i, j);
   }
 
   function tictactoe(i, j) {
@@ -129,9 +45,14 @@
       switchToCurrentSide(square)
       square.innerHTML = character();
       movecount += 1;
-      showWinners(side, i);
+      showWinners(i);
       activeGame = gameFull(board[j]) ? u : j;
-      showActiveGame();
+
+      each(ab3, function(x, i) {
+        removeClass(x, 'active');
+        if((activeGame == u || activeGame == i) && !gameFull(board[i]))
+          addClass(x, 'active');
+      });
 
       // Change side
       side = !side;
@@ -139,14 +60,6 @@
       if (mode == 1 && !side)
         return playRandomSquare();
     }
-  }
-
-  function showActiveGame() {
-    each(ab3, function(x, i) {
-      removeClass(x, 'active');
-      if((activeGame == u || activeGame == i) && !gameFull(board[i]))
-        addClass(x, 'active');
-    });
   }
 
   function gameFull(board) {
@@ -158,19 +71,21 @@
 
   function finishGame(winningSide) {
     gamePaused = true;
-    showWinnerModal(winningSide);
-    if (gameInterval)
-      clearInterval(gameInterval);
+    ab2.innerHTML = (winningSide != u ? character() + ' won.' : 'A tie!') + ' Play again?';
+    addClass(ab2, 'invisible', side);
+    ab2.style.display = 'block';
+    removeClass(ab2, 'invisible');
+    myClearInterval(gameInterval);
   }
 
   function character() {
     return side ? '&#215;' : '&#9675;';
   }
 
-  function showWinners(side, i) {
-    var winners = findWinners(board[i], side);
-    for(var k = 0; k < winners.length; k++)
-      for(var j = 0; j < winners[k].length; j++)
+  function showWinners(i) {
+    var winners = findWinners(board[i]), k, j, overallWinners;
+    for(k = 0; k < winners.length; k++)
+      for(j = 0; j < winners[k].length; j++)
         addClass(ab4[i*9 + winners[k][j]], 'won', side);
 
     if (winners.length > 0 && gameWinners[i] == u) {
@@ -179,33 +94,16 @@
       ab7[i].innerHTML += character();
     }
 
-    overallWinners = findWinners(gameWinners, side);
+    overallWinners = findWinners(gameWinners);
     overallWinners.length > 0 ? finishGame(side) : movecount > 80 && finishGame()
-    // if (overallWinners.length > 0) finishGame(false, side) else if (movecount >= 81) finishGame(true)
   }
 
-  function showWinnerModal(winningSide) {
-    ab2.innerHTML = (winningSide != u ? character() + ' won.' : 'A tie!') + ' Play again?';
-    addClass(ab2, 'invisible', side);
-    ab2.style.display = 'block';
-    removeClass(ab2, 'invisible');
-  }
-
-  function findWinners(board, side) {
-    var winners = [];
-
-    each(combinations, function(x) {
+  function findWinners(board) {
+    return combinations.reduce(function(prev, x) {
       if(board[x[0]] == side && board[x[1]] == side && board[x[2]] == side)
-        winners.push(x);
-    });
-
-    return winners;
-  }
-
-  function playRandomGame() {
-    gameInterval = setInterval(function() {
-        playRandomSquare();
-      }, 100);
+        prev.push(x);
+      return prev;
+    }, []);
   }
 
   function randInt(x) {
@@ -239,36 +137,74 @@
       else
         removeClass(x, 'active');
     });
-    selectedSquare++;
-  }
-
-  function makeEmDance() {
-    highlightSquares()
-    danceInterval = setInterval(highlightSquares, 100);
-  }
-
-  function makeEmStop() {
-    clearInterval(danceInterval);
-    each(ab4, function(x, i) {
-        removeClass(x, 'active');
-    });
   }
 
   function start() {
+    // newGameState
     board = [[], [], [], [], [], [], [], [], []];
     gameWinners = [];
     side = true; // true == x, false == o
     movecount = 0;
     activeGame = u;
     gamePaused = true;
-    draw();
-    getElements();
-    setTimeout(resize, 50);
-    bindEvents();
-    makeEmDance();
+
+    // render HTML
+    b.innerHTML = '<link rel="stylesheet" type="text/css" href="stylesheets/tictactoe.minimal.golf.css">' + renderHTML(
+      ['tictactoe true',
+        [9,
+          ['game active',
+            [9,
+              ['square']
+            ],
+            ['winner']
+          ]
+        ],
+        ['overallwinner'],
+        ['intro',
+          ['new', 'New Game'],
+          ['player', '0 players'],
+          ['player', '1 player'],
+          ['player', '2 players']
+        ]
+      ]
+    );
+
+    // boardElement = 0, introElement = 1, overallWinnerElement = 2, gameElements = 3, squareElements = 4, player(1,2,3) = 6, winnerElements = 7
+    ab0 = b.childNodes[1], ab1 = qsa('.intro')[0], ab2 = qsa('.overallwinner')[0], ab3 = qsa('.game'), ab4 = qsa('.square'), ab6 = qsa('.player'), ab7 = qsa('.winner');
+
+    // bind events
+    bindClick(ab4, function(e) {
+      var i = siblingNumber(e.target.parentNode),
+          j = siblingNumber(e.target);
+      tictactoe(i, j);
+    });
+    bindClick([ab2], start);
+    bindClick(ab6, function(e) {
+      mode = siblingNumber(e.target)-1;
+      addClass(ab1, 'invisible');
+      setTimeout(function() {
+        ab1.style.display = 'none';
+      }, 250);
+      myClearInterval(danceInterval);
+      each(ab4, function(x, i) {
+          removeClass(x, 'active');
+      });
+      gamePaused = false;
+      if(!mode) {
+        gameInterval = mySetInterval(function() {
+          playRandomSquare();
+        }, 100);
+      }
+    });
+    highlightSquares()
+    danceInterval = mySetInterval(highlightSquares, 100);
   }
 
-  window.onresize = resize;
+  window.onresize = function () {
+    ab0.style.transform = 'scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
+  };
+
+  setTimeout(onresize, 50);
 
   start();
 })();
