@@ -1,8 +1,9 @@
 (function () {
-  var board, gameWinners, side, movecount, activeGame, gamePaused, mode, gameInterval, u = void 0,
+  var board, gameWinners, side, movecount, activeGame, gamePaused, mode, gameInterval, danceInterval, u = void 0,
       d = document, qsa = d.querySelectorAll.bind(d), overallWinners, winners,
       combinations = [[0,4,8],[2,4,6],[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8]],
-      ab0,ab1,ab2,ab3,ab4,ab5,ab6,ab7;
+      ab0,ab1,ab2,ab3,ab4,ab5,ab6,ab7,
+      selectedSquare = 0;
 
   function newGameState() {
     board = [[], [], [], [], [], [], [], [], []];
@@ -16,6 +17,7 @@
   function player(e) {
     mode = siblingNumber(e.target)-1;
     hideModal();
+    makeEmStop();
     gamePaused = false;
     if(!mode) playRandomGame();
   }
@@ -116,6 +118,7 @@
   }
 
   function resize() {
+    console.log(b.offsetWidth, b.offsetHeight);
     ab0.style.transform = 'scale(' + Math.min(b.offsetWidth / 450, b.offsetHeight / 450); + ')';
   }
 
@@ -147,7 +150,7 @@
   function showActiveGame() {
     each(ab3, function(x, i) {
       removeClass(x, 'active');
-      if((activeGame == u || activeGame == i) && !gameFull(board[activeGame]))
+      if((activeGame == u || activeGame == i) && !gameFull(board[i]))
         addClass(x, 'active');
     });
     
@@ -236,8 +239,26 @@
     tictactoe(x[0], x[1]);
   }
 
-  function makeEmDance() {
+  function highlightSquares() {
+    each(ab4, function(x, i) {
+      if(randInt(2))
+        addClass(x, 'active');
+      else
+        removeClass(x, 'active');
+    });
+    selectedSquare++;
+  }
 
+  function makeEmDance() {
+    highlightSquares()
+    danceInterval = setInterval(highlightSquares, 100);
+  }
+
+  function makeEmStop() {
+    clearInterval(danceInterval);
+    each(ab4, function(x, i) {
+        removeClass(x, 'active');
+    });
   }
 
   function start() {
@@ -246,6 +267,7 @@
     getElements();
     resize();
     bindEvents();
+    makeEmDance();
   }
 
   window.onresize = resize;

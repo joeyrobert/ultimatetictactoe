@@ -50,6 +50,10 @@
 .game.active .square:hover {
   background: #E8FBFF;
 }
+.square.active {
+  background: #E8FBFF;
+  opacity: 0.3;
+}
 .game.won.true.active .winner, .game.won.false.active .winner {
   display: none;
 }
@@ -104,10 +108,10 @@
   background: #FFBFBF;
 }
 .intro {
-  width: 150px;
+  width: 144px;
   height: 114px;
-  margin-left: 150px;
-  margin-top: 168px;
+  margin-left: 140px;
+  margin-top: 155px;
   padding: 3px;
 }
 .new {
