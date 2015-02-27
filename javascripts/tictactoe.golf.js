@@ -6,12 +6,6 @@
       selectedSquare = 0;
 
   function newGameState() {
-    board = [[], [], [], [], [], [], [], [], []];
-    gameWinners = [];
-    side = true; // true == x, false == o
-    movecount = 0;
-    activeGame = u;
-    gamePaused = true;
   }
 
   function player(e) {
@@ -153,7 +147,6 @@
       if((activeGame == u || activeGame == i) && !gameFull(board[i]))
         addClass(x, 'active');
     });
-    
   }
 
   function gameFull(board) {
@@ -163,9 +156,9 @@
     return true;
   }
 
-  function finishGame(draw, winner) {
+  function finishGame(winningSide) {
     gamePaused = true;
-    showWinnerModal(true, side);
+    showWinnerModal(winningSide);
     if (gameInterval)
       clearInterval(gameInterval);
   }
@@ -187,12 +180,12 @@
     }
 
     overallWinners = findWinners(gameWinners, side);
-    overallWinners.length > 0 ? finishGame(false, side) : movecount >= 81 && finishGame(true)
+    overallWinners.length > 0 ? finishGame(side) : movecount > 80 && finishGame()
     // if (overallWinners.length > 0) finishGame(false, side) else if (movecount >= 81) finishGame(true)
   }
 
-  function showWinnerModal(winner, side) {
-    ab2.innerHTML = (winner ? character() + ' won.' : 'A tie!') + ' Play again?';
+  function showWinnerModal(winningSide) {
+    ab2.innerHTML = (winningSide != u ? character() + ' won.' : 'A tie!') + ' Play again?';
     addClass(ab2, 'invisible', side);
     ab2.style.display = 'block';
     removeClass(ab2, 'invisible');
@@ -262,10 +255,15 @@
   }
 
   function start() {
-    newGameState();
+    board = [[], [], [], [], [], [], [], [], []];
+    gameWinners = [];
+    side = true; // true == x, false == o
+    movecount = 0;
+    activeGame = u;
+    gamePaused = true;
     draw();
     getElements();
-    resize();
+    setTimeout(resize, 50);
     bindEvents();
     makeEmDance();
   }

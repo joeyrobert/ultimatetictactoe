@@ -1,6 +1,6 @@
 * {
   transition: opacity .25s ease-in-out;
-  font-family: sans-serif;
+  font-family: monospace;
   transform-origin: 50% 0;
 }
 
@@ -19,11 +19,11 @@
   border-color: #FF7A7A;
 }
 .square, .game {
-  width: calc(100% / 3);
-  height: calc(100% / 3);
   float: left;
 }
 .square {
+  width: 48px;
+  height: 48px;
   font-size: 47px;
   text-align: center;
   line-height: 43px;
@@ -34,6 +34,10 @@
 }
 .square.false {
   background: #FF7A7A;
+}
+.game {
+  width: 144px;
+  height: 144px;
 }
 .game.active .square.true:hover {
   background: #BEFFB5;
@@ -98,8 +102,9 @@
   height: 44px;
   display: none;
   line-height: 44px;
-  margin-left: 122px;
-  margin-top: 200px;
+  margin-left: 116px;
+  margin-top: 194px;
+  cursor: pointer;
 }
 .overallwinner.true {
   background: #BEFFB5;
@@ -109,9 +114,9 @@
 }
 .intro {
   width: 144px;
-  height: 114px;
-  margin-left: 140px;
-  margin-top: 155px;
+  height: 102px;
+  margin-left: 141px;
+  margin-top: 163px;
   padding: 3px;
 }
 .new {
@@ -122,6 +127,7 @@
   background: #8AFF7A;
   margin-bottom: 5px;
   border-radius: 10px;
+  cursor: pointer;
 }
 .player:hover {
   border-style: inset;
