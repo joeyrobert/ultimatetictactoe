@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>dev check</title>
+    <style>
+      html, body { margin: 0; height: 100%; }
+      iframe { position: fixed; inset: 0; width: 100vw; height: 100vh; border: 0; }
+      #report { position: fixed; right: 6px; bottom: 6px; z-index: 5; font: 10px/1.3 monospace; white-space: pre-wrap; opacity: .45; }
+    </style>
+  </head>
+  <body>
+    <!-- Check harness: drives index.html through its own controls, then prints PASS or FAIL into #report. -->
+    <!-- Run it with: chrome --headless=new --virtual-time-budget=400000 --dump-dom "http://localhost:8000/dev-check.html" -->
+    <!-- Pass ?layout=1&width=390&height=844 to test a narrow viewport, or ?mode=2&moves=20 to reach a screenshot state. -->
+    <iframe id="app" src="index.html"></iframe>
+    <pre id="report">running</pre>
+    <script>
+      const frame = document.getElementById('app');
+      const report = document.getElementById('report');
+      const lines = [];
+      const params = new URLSearchParams(location.search);
+      const shotMode = params.get('mode');
+      const shotMoves = Number(params.get('moves') || 0);
+
+      function log(text) {
+        lines.push(text);
+        report.textContent = lines.join('\n');
+      }
+
+      function wait(ms) {
+        return new Promise((resolve) => setTimeout(resolve, ms));
+      }
+
+      async function until(predicate, polls = 60) {
+        for (let n = 0; n < polls; n++) {
+          if (predicate()) return true;
+          await wait(100);
+        }
+        return false;
+      }
+
+      // Seeded picks keep the runs varied but reproducible.
+      let seed = 12345;
+      function pick(items) {
+        seed = (seed * 1103515245 + 12345) % 2147483648;
+        return items[Math.floor((seed / 2147483648) * items.length)];
+      }
+
+      // Everything below drives the real index.html through its real controls.
+      const doc = () => frame.contentDocument;
+      const cellsPlayed = () => doc().querySelectorAll('.cell.x, .cell.o').length;
+      const enabledCells = () => [...doc().querySelectorAll('.cell:not(:disabled)')];
+      const over = () => !doc().getElementById('result').hidden;
+      const status = () => doc().getElementById('status').textContent;
+
+      function checkMoveRules() {
+        const games = [...doc().querySelectorAll('.game')];
+        const text = status();
+        const active = [...doc().querySelectorAll('.game.active')];
+        const errors = [];
+
+        // Only squares on an active board may be clicked.
+        const activeCells = [...doc().querySelectorAll('.game.active .cell:not(:disabled)')];
+        if (enabledCells().length !== activeCells.length) {
+          errors.push(`clickable squares ${enabledCells().length} do not match active boards ${activeCells.length}`);
+        }
+
+        const forced = text.match(/board (\d+) only/);
+        if (forced) {
+          if (active.length !== 1) errors.push(`a forced move left ${active.length} active boards`);
+          else if (games.indexOf(active[0]) + 1 !== Number(forced[1])) {
+            errors.push(`status names board ${forced[1]} but another board is active`);
+          }
+        } else if (!text.includes('any open board') && !text.includes('Match over')) {
+          errors.push(`status gives no board guidance: ${text}`);
+        }
+
+        // A decided board reads as decided: watermark, marked line, nothing clickable.
+        const wonCount = { x: 0, o: 0 };
+        for (const won of doc().querySelectorAll('.game.won')) {
+          const mark = won.classList.contains('x') ? 'x' : 'o';
+          wonCount[mark] += 1;
+          if (!won.querySelector('.cover svg')) errors.push(`a won ${mark} board has no watermark`);
+          if (won.querySelector('.cell:not(:disabled)')) errors.push(`a won ${mark} board is still clickable`);
+          if (!won.querySelector('.cell.won')) errors.push(`a won ${mark} board does not mark its winning line`);
+        }
+
+        const shown = {
+          x: Number(doc().getElementById('score-x').textContent),
+          o: Number(doc().getElementById('score-o').textContent),
+        };
+        if (shown.x !== wonCount.x || shown.o !== wonCount.o) {
+          errors.push(`score chips ${JSON.stringify(shown)} disagree with won boards ${JSON.stringify(wonCount)}`);
+        }
+        return errors;
+      }
+
+      function checkEndState() {
+        const errors = [];
+        if (!doc().getElementById('result-heading').textContent) errors.push('match ended without a result heading');
+        if (!doc().getElementById('result-detail').textContent) errors.push('match ended without a result summary');
+        if (!doc().getElementById('menu').hidden) errors.push('mode menu still open after the match');
+        if (doc().getElementById('board').inert !== true) errors.push('the board is not inert behind the result card');
+        return errors;
+      }
+
+      function playTwoPlayerGames(count) {
+        const games = [];
+        for (let n = 0; n < count; n++) {
+          let moves = 0;
+          const errors = [];
+          while (!over()) {
+            errors.push(...checkMoveRules());
+            const cells = enabledCells();
+            if (!cells.length) {
+              errors.push('no clickable squares before the match ended');
+              break;
+            }
+            pick(cells).click();
+            moves += 1;
+            if (moves > 81) {
+              errors.push('exceeded 81 moves');
+              break;
+            }
+          }
+          games.push({
+            moves,
+            heading: doc().getElementById('result-heading').textContent,
+            detail: doc().getElementById('result-detail').textContent,
+            errors,
+          });
+          doc().getElementById('play-again').click(); // rematch keeps the same mode
+        }
+        return games;
+      }
+
+      async function playSoloGame() {
+        const errors = [];
+        let humanMoves = 0;
+        for (let guard = 0; guard < 200 && !over(); guard++) {
+          if (status().includes('Your move')) {
+            errors.push(...checkMoveRules());
+            if (!enabledCells().length) {
+              errors.push('no clickable squares on the human turn');
+              break;
+            }
+            pick(enabledCells()).click();
+            humanMoves += 1;
+            continue;
+          }
+          // The computer's turn: a human click must change nothing.
+          const before = cellsPlayed();
+          if (enabledCells().length) pick(enabledCells()).click();
+          if (cellsPlayed() !== before) errors.push("a human click landed during the computer's turn");
+          if (!(await until(() => cellsPlayed() !== before || over(), 40))) {
+            errors.push("the computer never answered the human's move");
+            break;
+          }
+        }
+        if (!over()) errors.push('solo match never finished');
+        errors.push(...checkEndState());
+        const human = doc().querySelectorAll('.cell.x').length;
+        if (human !== humanMoves) errors.push(`human moves ${humanMoves} but ${human} X marks on the board`);
+        return { moves: cellsPlayed(), heading: doc().getElementById('result-heading').textContent, errors };
+      }
+
+      async function playAutoplayGame() {
+        const errors = [];
+        for (let guard = 0; guard < 200 && !over(); guard++) {
+          const before = cellsPlayed();
+          if (enabledCells().length) pick(enabledCells()).click(); // manual input must not disturb autoplay
+          if (cellsPlayed() !== before) errors.push('a manual click disturbed autoplay');
+          if (!(await until(() => cellsPlayed() !== before || over(), 40))) {
+            errors.push(`autoplay stalled after ${before} moves without ending the match`);
+            break;
+          }
+        }
+        if (!over()) errors.push('autoplay match never finished');
+        errors.push(...checkEndState());
+        return { moves: cellsPlayed(), heading: doc().getElementById('result-heading').textContent, errors };
+      }
+
+      frame.addEventListener('load', async () => {
+        frame.contentWindow.addEventListener('error', (event) => log(`page error: ${event.message}`));
+        while (doc().querySelectorAll('.game').length < 9) await wait(50);
+
+        if (params.get('layout')) {
+          // Resizing the iframe gives an exact narrow viewport, unlike headless --window-size.
+          const targetWidth = Number(params.get('width') || 0);
+          const targetHeight = Number(params.get('height') || 0);
+          if (targetWidth) {
+            frame.style.width = `${targetWidth}px`;
+            frame.style.height = `${targetHeight}px`;
+            await wait(400);
+          }
+          const root = doc().documentElement;
+          const width = root.clientWidth;
+          const overflowing = [...doc().querySelectorAll('.app *')]
+            .filter((el) => {
+              const box = el.getBoundingClientRect();
+              return box.right > width + 1 || box.left < -1;
+            })
+            .map((el) => `  ${el.getAttribute('class') || el.tagName} right=${Math.round(el.getBoundingClientRect().right)} left=${Math.round(el.getBoundingClientRect().left)}`);
+          log(`viewport width=${width} scrollWidth=${root.scrollWidth} bodyScrollWidth=${doc().body.scrollWidth}`);
+          log(overflowing.length ? `OVERFLOW:\n${overflowing.join('\n')}` : 'PASS: nothing overflows the viewport');
+          return;
+        }
+
+        if (shotMode !== null) {
+          // Headless clamps its layout viewport to 500px, so narrow shots resize the iframe instead.
+          const shotWidth = Number(params.get('width') || 0);
+          const shotHeight = Number(params.get('height') || 0);
+          if (shotWidth) {
+            // Centered in this page so a centered image crop lands exactly on the app.
+            frame.style.inset = 'auto';
+            frame.style.left = `${Math.round((innerWidth - shotWidth) / 2)}px`;
+            frame.style.top = `${Math.round((innerHeight - shotHeight) / 2)}px`;
+            frame.style.width = `${shotWidth}px`;
+            frame.style.height = `${shotHeight}px`;
+            await wait(400);
+          }
+          doc().querySelector(`[data-mode="${shotMode}"]`).click();
+          for (let n = 0; n < shotMoves; n++) {
+            const cells = enabledCells();
+            if (!cells.length) break; // the match already ended
+            pick(cells).click();
+          }
+          await wait(2000); // let the mark animations finish before a capture happens
+          log(`shot: mode ${shotMode}`);
+          return;
+        }
+
+        if (doc().getElementById('overlay').hidden) log('FAIL: intro overlay is not shown on load');
+        if (doc().querySelectorAll('.cell').length !== 81) log('FAIL: expected 81 cells');
+        if (doc().getElementById('board').inert !== true) log('FAIL: the board is clickable behind the intro card');
+
+        const failures = [];
+
+        doc().querySelector('[data-mode="2"]').click();
+        if (!doc().getElementById('overlay').hidden) failures.push('overlay stayed open after picking a mode');
+        const twoPlayer = playTwoPlayerGames(4);
+        failures.push(...twoPlayer.flatMap((game) => game.errors));
+
+        doc().getElementById('new-game').click(); // back to the mode picker
+        if (doc().getElementById('menu').hidden) failures.push('new game did not reopen the mode picker');
+        if (cellsPlayed() !== 0) failures.push('new game did not clear the board');
+
+        doc().querySelector('[data-mode="1"]').click();
+        const names = {
+          x: doc().querySelector('#player-x .name').textContent,
+          o: doc().querySelector('#player-o .name').textContent,
+        };
+        if (names.x !== 'You' || names.o !== 'Computer') failures.push(`solo player labels are wrong: ${JSON.stringify(names)}`);
+        const solo = await playSoloGame();
+        failures.push(...solo.errors);
+
+        doc().getElementById('choose-mode').click();
+        doc().querySelector('[data-mode="0"]').click();
+        const autoplay = await playAutoplayGame();
+        failures.push(...autoplay.errors);
+
+        log('two player matches:');
+        twoPlayer.forEach((game, i) => log(`  #${i + 1} moves=${game.moves} "${game.heading}" (${game.detail})`));
+        log(`solo match: total moves=${solo.moves} "${solo.heading}"`);
+        log(`autoplay match: total moves=${autoplay.moves} "${autoplay.heading}"`);
+        log(failures.length ? `FAILURES:\n${failures.join('\n')}` : 'PASS: all three modes route moves, gate input, and reach correct end states');
+      });
+    </script>
+  </body>
+</html>

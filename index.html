@@ -1,17 +1,56 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Ultimate Tic Tac Toe</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-
-    <link href="vendor/bootstrap/css/bootstrap.css" type="text/css" rel="stylesheet">
-    <link href="stylesheets/tictactoe.css" type="text/css" rel="stylesheet">
-
-    <script src="vendor/jquery-1.10.1.js"></script>
-    <script src="vendor/underscore.js"></script>
-    <script src="javascripts/tictactoe.js"></script>
+    <link rel="stylesheet" href="stylesheets/tictactoe.css">
   </head>
-  <body id="ultimate">
-    <div id="tictactoecontainer"></div>
+  <body>
+    <main class="app">
+      <header class="topbar">
+        <h1><span class="accent">Ultimate</span> Tic Tac Toe</h1>
+        <div class="players">
+          <div class="player x" id="player-x">
+            <svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><path pathLength="1" d="M28 28 L72 72 M72 28 L28 72"/></svg>
+            <span class="name">Player X</span>
+            <span class="score" id="score-x">0</span>
+          </div>
+          <div class="player o" id="player-o">
+            <svg class="mark" viewBox="0 0 100 100" aria-hidden="true"><circle pathLength="1" cx="50" cy="50" r="26"/></svg>
+            <span class="name">Player O</span>
+            <span class="score" id="score-o">0</span>
+          </div>
+        </div>
+        <button class="btn" type="button" id="new-game">New game</button>
+      </header>
+
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <div class="board" id="board"></div>
+
+      <div class="overlay" id="overlay">
+        <div class="card">
+          <div id="menu">
+            <h2>New game</h2>
+            <p class="rules">Every move sends your opponent to the matching board. Win three boards in a row to win the match.</p>
+            <div class="modes">
+              <button class="mode" type="button" data-mode="1"><b>Play the computer</b><em>You play X against a random opponent</em></button>
+              <button class="mode" type="button" data-mode="2"><b>Play a friend</b><em>Take turns on this device</em></button>
+              <button class="mode" type="button" data-mode="0"><b>Autoplay</b><em>Watch two computers play</em></button>
+            </div>
+          </div>
+          <div id="result" hidden>
+            <h2 id="result-heading"></h2>
+            <p class="result-detail" id="result-detail"></p>
+            <div class="result-actions">
+              <button class="btn primary" type="button" id="play-again">Play again</button>
+              <button class="btn" type="button" id="choose-mode">Change mode</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+    <script src="javascripts/tictactoe.js"></script>
   </body>
 </html>

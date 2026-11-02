@@ -1,139 +1,417 @@
-body#ultimate {
+/* Ultimate Tic Tac Toe */
+
+:root {
+  color-scheme: dark light;
+  --bg: #0b0e14;
+  --surface: #151a23;
+  --cell: #1c222e;
+  --line: #293141;
+  --text: #e8ecf4;
+  --muted: #8a94a4;
+  --x: #5fd0a5;
+  --o: #ff7d75;
+  --accent: #6ea8fe;
+  --radius: 12px;
+  --dim: .55; /* how far boards you cannot play in recede */
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #f5f6f8;
+    --surface: #ffffff;
+    --cell: #eef1f5;
+    --line: #dce1e8;
+    --text: #171c26;
+    --muted: #6c7684;
+    --x: #0d8f6d;
+    --o: #cf4238;
+    --accent: #2f6fed;
+    --dim: .8;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(1100px 700px at 50% -15%, #1a2231 0%, var(--bg) 60%);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@media (prefers-color-scheme: light) {
+  body {
+    background: radial-gradient(1100px 700px at 50% -15%, #e9eef6 0%, var(--bg) 60%);
+  }
+}
+
+.app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: clamp(14px, 3vw, 28px);
+}
+
+/* Top bar: title, player chips, restart */
+
+.topbar {
+  /* Stays crisp and usable above the dimmed board when a card is open */
+  position: relative;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  flex-wrap: wrap;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: clamp(17px, 4vw, 24px);
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+
+.topbar .accent {
+  color: var(--accent);
+}
+
+.players {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.player {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 14px;
+  transition: border-color .2s, background-color .2s, color .2s;
+}
+
+.player .mark {
+  width: 15px;
+  height: 15px;
+}
+
+.player.x .mark { color: var(--x); }
+.player.o .mark { color: var(--o); }
+.player .score { font-weight: 650; font-variant-numeric: tabular-nums; }
+
+.player.x.active {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--x) 55%, var(--line));
+  background: color-mix(in srgb, var(--x) 12%, var(--surface));
+}
+
+.player.o.active {
+  color: var(--text);
+  border-color: color-mix(in srgb, var(--o) 55%, var(--line));
+  background: color-mix(in srgb, var(--o) 12%, var(--surface));
+}
+
+.status {
+  margin: 12px 0 14px;
+  color: var(--muted);
+  font-size: 14px;
+  min-height: 1.4em;
+}
+
+/* Board: a 3x3 of mini boards, each a 3x3 of cells */
+
+.board {
+  display: grid;
+  /* minmax(0, 1fr) keeps the svg marks from forcing columns wider than the board */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 14px);
+  width: min(100%, 62vh, 600px);
+  margin: 0 auto;
+  user-select: none;
+}
+
+.game {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 4px;
+  padding: 5px;
+  aspect-ratio: 1;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  opacity: var(--dim);
+  transition: opacity .2s, border-color .2s, box-shadow .2s;
+}
+
+.game.active {
+  opacity: 1;
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent) 25%, transparent),
+    0 14px 34px -18px color-mix(in srgb, var(--accent) 55%, transparent);
+}
+
+/* Playable squares carry a hint of the accent so they read as live */
+.game.active .cell {
+  background: color-mix(in srgb, var(--accent) 7%, var(--cell));
+}
+
+.game.won {
+  opacity: .92;
+  color: var(--o);
+  border-color: color-mix(in srgb, currentColor 45%, var(--line));
+}
+
+.game.won.x { color: var(--x); }
+
+.game.won .cell {
+  background: color-mix(in srgb, currentColor 7%, var(--cell));
+}
+
+/* The three squares that actually completed the board */
+.game.won .cell.won {
+  background: color-mix(in srgb, currentColor 18%, var(--cell));
+}
+
+/* The three mini boards that decided the match */
+.game.decided {
+  opacity: 1;
+  box-shadow: 0 0 0 2px color-mix(in srgb, currentColor 60%, transparent);
+}
+
+.cell {
+  appearance: none;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 1;
   margin: 0;
   padding: 0;
+  border: 0;
+  border-radius: 7px;
+  background: var(--cell);
+  color: var(--muted);
+  cursor: default;
+  touch-action: manipulation;
+  transition: background-color .15s, transform .1s;
 }
 
-#tictactoecontainer {
-  position: absolute;
-  height: 100%;
-  width: 100%;
-  overflow: hidden;
-}
-#tictactoe {
-  width: 444px;
-  height: 444px;
-  margin-left: auto;
-  margin-right: auto;
-  transform-origin: 50% 0;
-  -webkit-transform-origin: 50% 0;
-  -moz-transform-origin: 50% 0;
-  -ms-transform-origin: 50% 0;
-  -o-transform-origin: 50% 0;
-  /*border-color: #0079AD;*/
-  border-width: 3px;
-  border-style: solid;
+.board.turn-x .game.active .cell:not(.x):not(.o) { color: var(--x); }
+.board.turn-o .game.active .cell:not(.x):not(.o) { color: var(--o); }
+
+.cell.x { color: var(--x); }
+.cell.o { color: var(--o); }
+
+.cell:not(:disabled) {
+  cursor: pointer;
 }
 
-#tictactoe.x {
-  border-color: #8AFF7A;
-}
-#tictactoe.o {
-  border-color: #FF7A7A;
+.cell:not(:disabled):hover {
+  background: color-mix(in srgb, currentColor 16%, var(--cell));
 }
 
-.square {
-  width: 47px;
-  height: 47px;
-  float: left;
-  font-size: 47px;
-  text-align: center;
-  border: 1px solid #CCC;
-  line-height: 43px;
-  z-index: 10;
-}
-.square.x {
-  background-color: #8AFF7A;
-}
-.square.o {
-  background-color: #FF7A7A;
-}
-.game.active:hover .square.x:hover {
-  background-color: #BEFFB5;
-}
-.game.active:hover .square.o:hover {
-  background-color: #FFBFBF;
-}
-.game.active {
-  background-color: #91EDFF;
-}
-.game.active:hover {
-  background-color: #C7F4FC;
-}
-.game.active:hover .square:hover {
-  background-color: #E8FBFF;
-}
-.game.won.x.active .winner, .game.won.o.active .winner {
-  display: none;
-}
-.game {
-  width: 148px;
-  height: 148px;
-  float: left;
+.cell:not(:disabled):active {
+  transform: scale(.94);
 }
 
-.winner {
-  width: 147px;
-  height: 147px;
-  text-align: center;
-  position: absolute;
-  font-size: 200px;
-  line-height: 128px;
-  display: none;
-  opacity: 0.8;
-  z-index: 1;
-  overflow: hidden;
-  -webkit-transition: opacity .25s ease-in-out;
-     -moz-transition: opacity .25s ease-in-out;
-      -ms-transition: opacity .25s ease-in-out;
-       -o-transition: opacity .25s ease-in-out;
-          transition: opacity .25s ease-in-out;
+.cell:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
 }
-.game.won.x:hover .winner, .game.won.o:hover .winner {
-  opacity: 0;
-}
-.game.won.x .winner, .game.won.o .winner {
+
+/* Marks are stroke drawn SVG so they stay crisp at any size */
+
+svg.mark {
   display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-width: 10;
 }
-.game.won.x .winner {
-  background-color: rgb(138,255,122);
+
+.cell .mark {
+  width: 72%;
+  height: auto;
+  aspect-ratio: 1;
 }
-.game.won.o .winner {
-  background-color: rgb(255,122,122);
-}
-.mymodal {
+
+.cover {
   position: absolute;
-  border-radius: 10px;
-  box-shadow: 0px 0px 13px #000;
-  background-color: #fff;
+  inset: 10%;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .3s ease;
+}
+
+.cover .mark {
+  width: 100%;
+  height: 100%;
+  stroke-width: 6;
+}
+
+.game.won .cover { opacity: .18; }
+
+/* Marks are readable on their own, the draw only animates them in */
+.cell .mark,
+.cover .mark {
+  animation: draw .35s ease-out;
+}
+
+@keyframes draw {
+  from { stroke-dasharray: 1; stroke-dashoffset: 1; opacity: 0; }
+  to { stroke-dasharray: 1; stroke-dashoffset: 0; opacity: 1; }
+}
+
+/* Mode picker and result */
+
+.overlay {
+  position: fixed;
+  inset: 0;
   z-index: 20;
+  display: grid;
+  overflow: auto;
+  padding: 90px 20px 20px;
+  background: color-mix(in srgb, var(--bg) 70%, transparent);
+  backdrop-filter: blur(8px);
+}
+
+.card {
+  /* Auto margins center the card, and still scroll when it is taller than the viewport */
+  margin: auto;
+  width: min(420px, 100%);
+  padding: clamp(18px, 4vw, 26px);
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, .45);
+  animation: rise .25s ease-out;
+}
+
+/* At match end the card sits out of the way, so the decided boards stay readable */
+.overlay.for-result {
+  background: color-mix(in srgb, var(--bg) 45%, transparent);
+  backdrop-filter: none;
+}
+
+.overlay.for-result .card {
+  align-self: end;
+  margin: 0 auto 24px;
+}
+
+.card h2 {
+  margin: 0 0 6px;
+  font-size: 20px;
+  letter-spacing: -0.01em;
+}
+
+.rules,
+.result-detail {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.modes {
+  display: grid;
+  gap: 8px;
+}
+
+.mode,
+.btn {
+  display: block;
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+  background: var(--cell);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 11px 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s, background-color .15s;
+}
+
+.mode:hover,
+.btn:hover {
+  border-color: color-mix(in srgb, var(--accent) 50%, var(--line));
+  background: color-mix(in srgb, var(--accent) 10%, var(--cell));
+}
+
+.mode b {
+  display: block;
+  font-weight: 600;
+}
+
+.mode em {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+  font-style: normal;
+}
+
+#result.x h2 { color: var(--x); }
+#result.o h2 { color: var(--o); }
+
+.result-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.result-actions .btn {
+  width: auto;
+  flex: 1;
   text-align: center;
-  -webkit-transition: opacity .25s ease-in-out;
-     -moz-transition: opacity .25s ease-in-out;
-      -ms-transition: opacity .25s ease-in-out;
-       -o-transition: opacity .25s ease-in-out;
-          transition: opacity .25s ease-in-out;
 }
-.mymodal.overallwinner {
-  width: 200px;
-  height: 44px;
-  display: none;
-  line-height: 44px;
-  margin-left: 122px;
-  margin-top: 200px;
+
+.btn.primary {
+  background: color-mix(in srgb, var(--accent) 22%, var(--cell));
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
 }
-.mymodal.overallwinner.x { 
-  background-color: #BEFFB5;
+
+#new-game {
+  width: auto;
+  padding: 8px 14px;
+  text-align: center;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 14px;
 }
-.mymodal.overallwinner.o { 
-  background-color: #FFBFBF;
+
+@keyframes rise {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
-.mymodal.intro {
-  width: 200px;
-  height: 170px;
-  margin-left: 122px;
-  margin-top: 137px;
+
+/* Small screens: title on its own row, tighter chips */
+
+@media (max-width: 560px) {
+  .topbar h1 {
+    flex: 1 1 100%;
+  }
+
+  .player {
+    padding: 4px 10px;
+    font-size: 13px;
+  }
 }
-.mymodal .btn {
-  width: 165px;
-  height: 25px;
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
 }
